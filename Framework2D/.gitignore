@@ -4,3 +4,6 @@ libs/
 .vscode
 imgui.ini
 third_party/Eigen/
+
+.direnv/
+.envrc
