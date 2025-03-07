@@ -10,6 +10,14 @@
 // warp(...) function to perform the actual warping.
 #pragma once
 
+#include <vector>
+
+#include <Eigen/Dense>
+
+#include "imgui.h"
+
+using std::vector, std::pair, std::make_pair;
+
 namespace USTC_CG
 {
 class Warper
@@ -18,7 +26,13 @@ class Warper
     virtual ~Warper() = default;
 
     // HW2_TODO: A virtual function warp(...)
+    virtual pair<int, int> warp(int x, int y) const = 0;
     
     // HW2_TODO: other functions or variables if you need
+    virtual void update(int n, vector<ImVec2> p, vector<ImVec2> q) = 0;
+
+   protected:
+    int n;
+    std::vector<Eigen::Vector2d> p, q;
 };
 }  // namespace USTC_CG

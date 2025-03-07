@@ -6,7 +6,7 @@ file(GLOB source
   "${CMAKE_CURRENT_SOURCE_DIR}/warper/*.h" 
 )
 add_executable(${PROJECT_NAME} ${source})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/_deps)
 
 # HW2_TODO(optional): Add Dlib support to the project
 find_package(dlib QUIET)

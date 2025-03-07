@@ -1,6 +1,7 @@
 build/
 bin/
 libs/
+_deps/
 .vscode
 imgui.ini
 third_party/Eigen/

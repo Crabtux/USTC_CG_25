@@ -2,6 +2,11 @@
 
 #include "common/image_widget.h"
 
+#include "warper/warper.h"
+#include "warper/IDW_warper.h"
+#include "warper/RBF_warper.h"
+#include "warper/Fisheye_warper.h"
+
 namespace USTC_CG
 {
 // Image component for warping and other functions
@@ -55,7 +60,7 @@ class WarpingWidget : public ImageWidget
 
    private:
     // A simple "fish-eye" warping function
-    std::pair<int, int> fisheye_warping(int x, int y, int width, int height);
+    void performWarp(USTC_CG::Warper &warper, std::shared_ptr<USTC_CG::Image> data, Image &warped_image);
 };
 
 }  // namespace USTC_CG
