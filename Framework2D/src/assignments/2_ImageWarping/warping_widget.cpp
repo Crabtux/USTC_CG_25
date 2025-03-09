@@ -1,7 +1,11 @@
 #include "warping_widget.h"
 
+#include <set>
 #include <cmath>
 #include <iostream>
+
+#include "annoylib.h"
+#include "kissrandom.h"
 
 namespace USTC_CG
 {
@@ -235,15 +239,68 @@ void WarpingWidget::init_selections()
     end_points_.clear();
 }
 
+// 辅助函数：对结果图像中的空洞（背景色为黑）进行最近邻重采样填充
+void fillHolesWithNearestNeighbor(const std::vector<pair<int, int>>& new_pixels, Image &warped_image) {
+    const int dim = 2;
+    int n_points = new_pixels.size();
+
+    Annoy::AnnoyIndex<int, float, Annoy::Euclidean, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(dim);
+    for (int i = 0; i < n_points; i++) {
+        float vec[dim] = { static_cast<float>(new_pixels[i].first), static_cast<float>(new_pixels[i].second) };
+        index.add_item(i, vec);
+    }
+    index.build(10);
+
+    int width = warped_image.width();
+    int height = warped_image.height();
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            // 对于 (x, y)，找其最近邻点 (x1, y1)
+            float query[dim] = { static_cast<float>(x), static_cast<float>(y) };
+            std::vector<int> result;
+            std::vector<float> distances;
+            index.get_nns_by_vector(query, 1, -1, &result, &distances);
+            if(result.empty()) continue;
+            auto [x1, y1] = new_pixels[result[0]];
+            float dis1 = distances[0];
+
+            // 对于 (x1, y1)，找其最近邻（要求返回 2 个，第二个为真正的邻居）
+            float query2[dim] = { static_cast<float>(x1), static_cast<float>(y1) };
+            std::vector<int> result2;
+            std::vector<float> distances2;
+            index.get_nns_by_vector(query2, 2, -1, &result2, &distances2);
+            if(distances2.size() < 2) continue;
+            float dis2 = distances2[1];
+
+            // 如果 dis1 <= dis2 * sigma，则认为 (x, y) 为图片内部产生的空洞，需要填充
+            // 实际测试下取 8 还是比较合适的（
+            if (dis1 <= dis2 * 8) {  
+                if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height) {
+                    auto fill_color = warped_image.get_pixel(x1, y1);
+                    warped_image.set_pixel(x, y, fill_color);
+                }
+            }
+        }
+    }
+}
+
+
 void WarpingWidget::performWarp(USTC_CG::Warper &warper, std::shared_ptr<USTC_CG::Image> data, Image &warped_image) {
+    std::set<pair<int, int>> s;
     for (int y = 0; y < data->height(); ++y) {
         for (int x = 0; x < data->width(); ++x) {
             auto [new_x, new_y] = warper.warp(x, y);
             if (new_x >= 0 && new_x < data->width() && new_y >= 0 && new_y < data->height()) {
                 auto pixel = data->get_pixel(x, y);
                 warped_image.set_pixel(new_x, new_y, pixel);
+                s.insert(make_pair(new_x, new_y));
             }
         }
     }
+
+    std::vector<pair<int, int>> new_pixels;
+    new_pixels.assign(s.begin(), s.end());
+    
+    fillHolesWithNearestNeighbor(new_pixels, warped_image);
 }
 }  // namespace USTC_CG

@@ -59,7 +59,7 @@ class WarpingWidget : public ImageWidget
     WarpingType warping_type_;
 
    private:
-    // A simple "fish-eye" warping function
+    // 加入了重采样的 Warp 函数
     void performWarp(USTC_CG::Warper &warper, std::shared_ptr<USTC_CG::Image> data, Image &warped_image);
 };
 

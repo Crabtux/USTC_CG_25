@@ -9,7 +9,7 @@ add_executable(${PROJECT_NAME} ${source})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/_deps)
 
 # HW2_TODO(optional): Add Dlib support to the project
-find_package(dlib QUIET)
+find_package(dlib)
 if(dlib_FOUND)
   message(STATUS "Dlib found")
   target_link_libraries(${PROJECT_NAME} PRIVATE dlib::dlib)
