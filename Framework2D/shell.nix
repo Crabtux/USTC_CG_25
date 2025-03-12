@@ -3,6 +3,11 @@
 pkgs.mkShell {
   name = "USTC_CG_2025_HW01_devshell";
 
+  packages = with pkgs; [
+    clang-uml
+    plantuml
+  ];
+
   nativeBuildInputs = with pkgs; [
     cmake
     pkg-config
@@ -32,5 +37,7 @@ pkgs.mkShell {
     xorg.libXext
     xorg.libXxf86vm
   ]);
+
+  dlib_DIR = "/home/crabtux/code/cpp/USTC_CG_25/Framework2D/src/assignments/2_ImageWarping/_deps/dlib/lib64/cmake/dlib";
 }
 
