@@ -7,3 +7,7 @@
 [submodule "Framework2D/third_party/glfw"]
 	path = Framework2D/third_party/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Framework3D/Framework3D"]
+	path = Framework3D/Framework3D
+	url = https://github.com/USTC-CG-NEXT/Framework3D.git
+	branch = homework

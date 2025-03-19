@@ -154,6 +154,9 @@ void SourceImageWidget::update_selected_region()
     {
         int x = pixel.first;
         int y = pixel.second;
+        if (x < 0 || x >= selected_region_mask_->width() || 
+            y < 0 || y >= selected_region_mask_->height())
+            continue;
         selected_region_mask_->set_pixel(x, y, { 255 });
     }
 }
