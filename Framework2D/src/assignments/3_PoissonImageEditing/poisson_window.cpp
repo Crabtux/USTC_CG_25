@@ -81,6 +81,20 @@ void PoissonWindow::draw_toolbar()
             "mouse.");
         if (p_target_)
             p_target_->set_realtime(realtime);
+        static bool mixed_gradient = false;
+        ImGui::Checkbox("MixedGradient", &mixed_gradient);
+        add_tooltips(
+            "On: Enable Mixed Gradient Seamless Cloning in the target image."
+            "This only takes effect when Seamless Cloning mode is on.");
+        if (p_target_)
+            p_target_->set_mixed_gradient(mixed_gradient);
+        static bool matrix_preprocess = false;
+        ImGui::Checkbox("MatrixPreprocess", &matrix_preprocess);
+        add_tooltips(
+            "On: Enable Matrix Preprocessing for Seamless Cloning in the target "
+            "image. This only takes effect when Seamless Cloning mode is on.");
+        if (p_target_)
+            p_target_->set_matrix_preprocess(matrix_preprocess);
 
         ImGui::Separator();
 
@@ -93,6 +107,13 @@ void PoissonWindow::draw_toolbar()
             "clone the selected region to the target image.");
         // HW3_TODO: You may add more items in the menu for the different types
         // of Poisson editing.
+        if (ImGui::MenuItem("Seamless") && p_target_ && p_source_)
+        {
+            p_target_->set_seamless();
+        }
+        add_tooltips(
+            "Press this button and then click in the target image, to "
+            "seamlessly clone the selected region to the target image.");
 
         ImGui::EndMainMenuBar();
     }

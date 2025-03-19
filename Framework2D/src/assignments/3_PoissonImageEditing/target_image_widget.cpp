@@ -1,5 +1,8 @@
 #include "target_image_widget.h"
 
+#include <memory>
+#include <iostream>
+#include <chrono>
 #include <cmath>
 
 namespace USTC_CG
@@ -50,6 +53,16 @@ void TargetImageWidget::set_source(std::shared_ptr<SourceImageWidget> source)
 void TargetImageWidget::set_realtime(bool flag)
 {
     flag_realtime_updating = flag;
+}
+
+void TargetImageWidget::set_mixed_gradient(bool flag)
+{
+    flag_mixed_gradient = flag;
+}
+
+void TargetImageWidget::set_matrix_preprocess(bool flag)
+{
+    flag_matrix_preprocessing = flag;
 }
 
 void TargetImageWidget::restore()
@@ -123,6 +136,22 @@ void TargetImageWidget::clone()
             // each pixel in the selected region, calculate the final RGB color
             // by solving Poisson Equations.
             restore();
+            
+            auto start = std::chrono::high_resolution_clock::now();
+            cloner_.update(source_image_->get_data(), data_, mask,
+                           mouse_position_, flag_mixed_gradient,
+                           flag_matrix_preprocessing);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto update_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            std::cout << "update time: " << update_time << " 微秒" << std::endl;
+            
+            start = std::chrono::high_resolution_clock::now();
+            data_ = cloner_.solve();
+            end = std::chrono::high_resolution_clock::now();
+            auto solve_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            std::cout << "solve time: " << solve_time << " 微秒" << std::endl;
+
+            std::cout << "FPS: " << 1000000.0 / (update_time + solve_time) << std::endl;
 
             break;
         }

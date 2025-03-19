@@ -3,6 +3,8 @@
 #include "source_image_widget.h"
 #include "common/image_widget.h"
 
+#include "seamless_clone.h"
+
 namespace USTC_CG
 {
 class TargetImageWidget : public ImageWidget
@@ -27,6 +29,10 @@ class TargetImageWidget : public ImageWidget
     void set_source(std::shared_ptr<SourceImageWidget> source);
     // Enable real-time updating
     void set_realtime(bool flag);
+    // Enable Mixed Gradient for Seamless Cloning
+    void set_mixed_gradient(bool flag);
+    // Enable Matrix Preprocessing for Seamless Cloning
+    void set_matrix_preprocess(bool flag);
     // Restore the target image
     void restore();
     // HW3_TODO: Add more types of cloning, we have implemented the "Paste"
@@ -50,10 +56,14 @@ class TargetImageWidget : public ImageWidget
     std::shared_ptr<Image> back_up_;
     // Source image
     std::shared_ptr<SourceImageWidget> source_image_;
+    // Seamless Cloner
+    SeamlessCloneRect cloner_;
     CloneType clone_type_ = kDefault;
 
     ImVec2 mouse_position_;
     bool edit_status_ = false;
     bool flag_realtime_updating = false;
+    bool flag_mixed_gradient = false;
+    bool flag_matrix_preprocessing = false;
 };
 }  // namespace USTC_CG

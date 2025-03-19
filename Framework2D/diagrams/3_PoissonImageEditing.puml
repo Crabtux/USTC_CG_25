@@ -1,0 +1,246 @@
+@startuml
+class "Window" as C_0005615952877166577034
+class C_0005615952877166577034 {
++Window(const std::string & window_name) : void
++~Window() : void
+..
+#draw() : void
++init() : bool
+#init_glfw() : bool
+#init_gui() : bool
+#render() : void
++run() : void
+__
+#height_ : int
+#name_ : std::string
+#width_ : int
+#window_ : GLFWwindow *
+}
+class "Image" as C_0014112585937540257907
+class C_0014112585937540257907 {
++Image() = default : void
++Image(int width, int height, int channels) : void
++Image(int width, int height, int channels, std::unique_ptr<unsigned char[]> image_data) : void
++Image(const Image & other) : void
++Image(Image &&) noexcept = default : void
++~Image() = default : void
+..
++operator=(const Image & other) : Image &
++operator=(Image &&) noexcept = default : Image &
+..
++channels() const : int
++data() const : unsigned char *
++get_pixel(int x, int y) const : std::vector<unsigned char>
++height() const : int
++initialize(int width, int height, int channels, std::unique_ptr<unsigned char[]> image_data) : void
++set_pixel(int x, int y, const std::vector<unsigned char> & values) : void
++width() const : int
+__
+-channels_ : int
+-height_ : int
+-image_data_ : std::unique_ptr<unsigned char[]>
+-width_ : int
+}
+abstract "Widget" as C_0000146601290597178883
+abstract C_0000146601290597178883 {
++Widget(const std::string & label) : void
++~Widget() constexpr = default : void
+..
+{abstract} +draw() = 0 : void
+__
+#label_ : std::string
+}
+class "ImageWidget" as C_0013545482483965092354
+class C_0013545482483965092354 {
++ImageWidget(const std::string & label, const std::string & filename) : void
++~ImageWidget() : void
+..
++draw() : void
+-draw_image() : void
++get_image_size() const : ImVec2
+-load_gltexture() : void
++save_to_disk(const std::string & filename) : void
++set_position(const ImVec2 & pos) : void
++update() : void
+__
+#data_ : std::shared_ptr<Image>
+#filename_ : std::string
+#image_height_ : int
+#image_width_ : int
+#position_ : ImVec2
+#tex_id_ : GLuint
+}
+abstract "Shape" as C_0013949332899565985436
+abstract C_0013949332899565985436 {
++~Shape() constexpr = default : void
+..
++add_control_point(float x, float y) : void
+{abstract} +draw(const Config & config) const = 0 : void
+{abstract} +update(float x, float y) = 0 : void
+__
+}
+class "Shape::Config" as C_0010110700635438516104
+class C_0010110700635438516104 {
+__
++bias : float[2]
++line_color : unsigned char[4]
++line_thickness : float
+}
+class "Rect" as C_0007557301749679236440
+class C_0007557301749679236440 {
++Rect() = default : void
++Rect(float start_point_x, float start_point_y, float end_point_x, float end_point_y) : void
++~Rect() constexpr = default : void
+..
++draw(const Config & config) const : void
++get_interior_pixels() const : std::vector<std::pair<int,int>>
++update(float x, float y) : void
+__
+-end_point_x_ : float
+-end_point_y_ : float
+-start_point_x_ : float
+-start_point_y_ : float
+}
+class "SourceImageWidget" as C_0002652310705840739488
+class C_0002652310705840739488 {
++SourceImageWidget(const std::string & label, const std::string & filename) : void
++~SourceImageWidget() noexcept = default : void
+..
++draw() : void
++enable_selecting(bool flag) : void
++get_data() : std::shared_ptr<Image>
++get_position() const : ImVec2
++get_region_mask() : std::shared_ptr<Image>
+-mouse_click_event() : void
+-mouse_move_event() : void
+-mouse_pos_in_canvas() const : ImVec2
+-mouse_release_event() : void
++select_region() : void
+-update_selected_region() : void
+__
+-draw_status_ : bool
+-end_ : ImVec2
+-flag_enable_selecting_region_ : bool
+-region_type_ : RegionType
+-selected_region_mask_ : std::shared_ptr<Image>
+-selected_shape_ : std::unique_ptr<Rect>
+-start_ : ImVec2
+}
+enum "SourceImageWidget::RegionType" as C_0008016162847064883511
+enum C_0008016162847064883511 {
+kDefault
+kRect
+}
+class "SeamlessCloneRect" as C_0005902140575122187683
+class C_0005902140575122187683 {
++SeamlessCloneRect() = default : void
++SeamlessCloneRect(std::shared_ptr<Image> src_img, std::shared_ptr<Image> tar_img, std::shared_ptr<Image> selected_mask, ImVec2 mouse_position) : void
+..
++solve() : std::shared_ptr<Image>
++update(std::shared_ptr<Image> src_img, std::shared_ptr<Image> tar_img, std::shared_ptr<Image> src_selected_mask, ImVec2 mouse_position) : void
+__
+-mask_bottom_right_p_ : ImVec2
+-mask_top_left_p_ : ImVec2
+-offset_x_ : int
+-offset_y_ : int
+-selected_mask_ : std::shared_ptr<Image>
+-solver_ : Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>>
+-src_img_ : std::shared_ptr<Image>
+-tar_img_ : std::shared_ptr<Image>
+}
+class "TargetImageWidget" as C_0012494642481053517494
+class C_0012494642481053517494 {
++TargetImageWidget(const std::string & label, const std::string & filename) : void
++~TargetImageWidget() noexcept = default : void
+..
++clone() : void
++draw() : void
+-mouse_click_event() : void
+-mouse_move_event() : void
+-mouse_pos_in_canvas() const : ImVec2
+-mouse_release_event() : void
++restore() : void
++set_paste() : void
++set_realtime(bool flag) : void
++set_seamless() : void
++set_source(std::shared_ptr<SourceImageWidget> source) : void
+__
+-back_up_ : std::shared_ptr<Image>
+-clone_type_ : CloneType
+-cloner_ : SeamlessCloneRect
+-edit_status_ : bool
+-flag_realtime_updating : bool
+-mouse_position_ : ImVec2
+-source_image_ : std::shared_ptr<SourceImageWidget>
+}
+enum "TargetImageWidget::CloneType" as C_0005676922376919311456
+enum C_0005676922376919311456 {
+kDefault
+kPaste
+kSeamless
+}
+class "PoissonWindow" as C_0003829638462429393707
+class C_0003829638462429393707 {
++PoissonWindow(const std::string & window_name) : void
++~PoissonWindow() : void
+..
+-add_tooltips(std::string desc) : void
++draw() : void
+-draw_open_source_image_file_dialog() : void
+-draw_open_target_image_file_dialog() : void
+-draw_save_image_file_dialog() : void
+-draw_source() : void
+-draw_target() : void
+-draw_toolbar() : void
+__
+-flag_open_source_file_dialog_ : bool
+-flag_open_target_file_dialog_ : bool
+-flag_save_file_dialog_ : bool
+-flag_show_source_view_ : bool
+-flag_show_target_view_ : bool
+-p_source_ : std::shared_ptr<SourceImageWidget>
+-p_target_ : std::shared_ptr<TargetImageWidget>
+}
+class "Line" as C_0014826438833874875116
+class C_0014826438833874875116 {
++Line() = default : void
++Line(float start_point_x, float start_point_y, float end_point_x, float end_point_y) : void
++~Line() constexpr = default : void
+..
++draw(const Config & config) const : void
++update(float x, float y) : void
+__
+-end_point_x_ : float
+-end_point_y_ : float
+-start_point_x_ : float
+-start_point_y_ : float
+}
+C_0013545482483965092354 --> C_0014112585937540257907 : #data_
+C_0000146601290597178883 <|-- C_0013545482483965092354
+C_0013949332899565985436 ..> C_0010110700635438516104
+C_0010110700635438516104 --+ C_0013949332899565985436
+C_0007557301749679236440 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0007557301749679236440
+C_0002652310705840739488 o-- C_0008016162847064883511 : -region_type_
+C_0002652310705840739488 o-- C_0007557301749679236440 : -selected_shape_
+C_0002652310705840739488 --> C_0014112585937540257907 : -selected_region_mask_
+C_0013545482483965092354 <|-- C_0002652310705840739488
+C_0008016162847064883511 --+ C_0002652310705840739488
+C_0005902140575122187683 --> C_0014112585937540257907 : -src_img_
+C_0005902140575122187683 --> C_0014112585937540257907 : -tar_img_
+C_0005902140575122187683 --> C_0014112585937540257907 : -selected_mask_
+C_0012494642481053517494 --> C_0014112585937540257907 : -back_up_
+C_0012494642481053517494 --> C_0002652310705840739488 : -source_image_
+C_0012494642481053517494 o-- C_0005902140575122187683 : -cloner_
+C_0012494642481053517494 o-- C_0005676922376919311456 : -clone_type_
+C_0013545482483965092354 <|-- C_0012494642481053517494
+C_0005676922376919311456 --+ C_0012494642481053517494
+C_0003829638462429393707 --> C_0012494642481053517494 : -p_target_
+C_0003829638462429393707 --> C_0002652310705840739488 : -p_source_
+C_0005615952877166577034 <|-- C_0003829638462429393707
+C_0014826438833874875116 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0014826438833874875116
+
+'Generated with clang-uml, version 0.6.0
+'LLVM version clang version 19.1.7
+@enduml

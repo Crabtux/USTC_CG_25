@@ -8,3 +8,4 @@ third_party/Eigen/
 
 .direnv/
 .envrc
+*.mp4

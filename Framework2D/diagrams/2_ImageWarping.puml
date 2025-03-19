@@ -1,0 +1,188 @@
+@startuml
+class "Window" as C_0005615952877166577034
+class C_0005615952877166577034 {
++Window(const std::string & window_name) : void
++~Window() : void
+..
+#draw() : void
++init() : bool
+#init_glfw() : bool
+#init_gui() : bool
+#render() : void
++run() : void
+__
+#height_ : int
+#name_ : std::string
+#width_ : int
+#window_ : GLFWwindow *
+}
+class "Image" as C_0014112585937540257907
+class C_0014112585937540257907 {
++Image() = default : void
++Image(int width, int height, int channels) : void
++Image(int width, int height, int channels, std::unique_ptr<unsigned char[]> image_data) : void
++Image(const Image & other) : void
++Image(Image &&) noexcept = default : void
++~Image() = default : void
+..
++operator=(const Image & other) : Image &
++operator=(Image &&) noexcept = default : Image &
+..
++channels() const : int
++data() const : unsigned char *
++get_pixel(int x, int y) const : std::vector<unsigned char>
++height() const : int
++initialize(int width, int height, int channels, std::unique_ptr<unsigned char[]> image_data) : void
++set_pixel(int x, int y, const std::vector<unsigned char> & values) : void
++width() const : int
+__
+-channels_ : int
+-height_ : int
+-image_data_ : std::unique_ptr<unsigned char[]>
+-width_ : int
+}
+abstract "Widget" as C_0000146601290597178883
+abstract C_0000146601290597178883 {
++Widget(const std::string & label) : void
++~Widget() constexpr = default : void
+..
+{abstract} +draw() = 0 : void
+__
+#label_ : std::string
+}
+class "ImageWidget" as C_0013545482483965092354
+class C_0013545482483965092354 {
++ImageWidget(const std::string & label, const std::string & filename) : void
++~ImageWidget() : void
+..
++draw() : void
+-draw_image() : void
++get_image_size() const : ImVec2
+-load_gltexture() : void
++save_to_disk(const std::string & filename) : void
++set_position(const ImVec2 & pos) : void
++update() : void
+__
+#data_ : std::shared_ptr<Image>
+#filename_ : std::string
+#image_height_ : int
+#image_width_ : int
+#position_ : ImVec2
+#tex_id_ : GLuint
+}
+abstract "Warper" as C_0005210127257381569686
+abstract C_0005210127257381569686 {
++~Warper() constexpr = default : void
+..
+{abstract} +update(int n, std::vector<ImVec2> p, std::vector<ImVec2> q) = 0 : void
+{abstract} +warp(int x, int y) const = 0 : std::pair<int,int>
+__
+#n : int
+#p : std::vector<Eigen::Vector2d>
+#q : std::vector<Eigen::Vector2d>
+}
+class "IDWWarper" as C_0004061795669576340082
+class C_0004061795669576340082 {
++IDWWarper() = default : void
++~IDWWarper() constexpr = default : void
+..
+-calc_warp_single(int i, Eigen::Vector2d p) const : Eigen::Vector2d
+-calc_weight_single(int i, Eigen::Vector2d p) const : float
+-sigma(int i, Eigen::Vector2d p) const : float
+-solve_Ti(int i) : void
++update(int n, std::vector<ImVec2> p, std::vector<ImVec2> q) : void
++warp(int x, int y) const : std::pair<int,int>
+__
+-Ti : vector<Eigen::Matrix2d>
+}
+class "RBFWarper" as C_0004093605108700194209
+class C_0004093605108700194209 {
++RBFWarper() = default : void
++~RBFWarper() constexpr = default : void
+..
+-gi(int i, Eigen::Vector2d p1, Eigen::Vector2d p2) const : float
+-solve_alpha() : void
++update(int n, std::vector<ImVec2> p, std::vector<ImVec2> q) : void
++warp(int x, int y) const : std::pair<int,int>
+__
+-alpha : vector<Eigen::Vector2d>
+}
+class "FisheyeWarper" as C_0016991862448108252556
+class C_0016991862448108252556 {
++FisheyeWarper(int width, int height) : void
++~FisheyeWarper() constexpr = default : void
+..
++update(int n, std::vector<ImVec2> p, std::vector<ImVec2> q) : void
++warp(int x, int y) const : std::pair<int,int>
+__
+-height_ : int
+-width_ : int
+}
+class "WarpingWidget" as C_0010620957507357588889
+class C_0010620957507357588889 {
++WarpingWidget(const std::string & label, const std::string & filename) : void
++~WarpingWidget() noexcept = default : void
+..
++draw() : void
++enable_selecting(bool flag) : void
++gray_scale() : void
++init_selections() : void
++invert() : void
++mirror(bool is_horizontal, bool is_vertical) : void
+-performWarp(Warper & warper, std::shared_ptr<Image> data, Image & warped_image) : void
++restore() : void
++select_points() : void
++set_IDW() : void
++set_RBF() : void
++set_default() : void
++set_fisheye() : void
++warping() : void
+__
+-back_up_ : std::shared_ptr<Image>
+-draw_status_ : bool
+-end_ : ImVec2
+-end_points_ : std::vector<ImVec2>
+-flag_enable_selecting_points_ : bool
+-start_ : ImVec2
+-start_points_ : std::vector<ImVec2>
+-warping_type_ : WarpingType
+}
+enum "WarpingWidget::WarpingType" as C_0008860430704286041802
+enum C_0008860430704286041802 {
+kDefault
+kFisheye
+kIDW
+kRBF
+}
+class "ImageWarping" as C_0015799222863000931812
+class C_0015799222863000931812 {
++ImageWarping(const std::string & window_name) : void
++~ImageWarping() : void
+..
++draw() : void
+-draw_image() : void
+-draw_open_image_file_dialog() : void
+-draw_save_image_file_dialog() : void
+-draw_toolbar() : void
+__
+-flag_open_file_dialog_ : bool
+-flag_save_file_dialog_ : bool
+-flag_show_main_view_ : bool
+-p_image_ : std::shared_ptr<WarpingWidget>
+}
+C_0013545482483965092354 --> C_0014112585937540257907 : #data_
+C_0000146601290597178883 <|-- C_0013545482483965092354
+C_0005210127257381569686 <|-- C_0004061795669576340082
+C_0005210127257381569686 <|-- C_0004093605108700194209
+C_0005210127257381569686 <|-- C_0016991862448108252556
+C_0010620957507357588889 ..> C_0005210127257381569686
+C_0010620957507357588889 --> C_0014112585937540257907 : -back_up_
+C_0010620957507357588889 o-- C_0008860430704286041802 : -warping_type_
+C_0013545482483965092354 <|-- C_0010620957507357588889
+C_0008860430704286041802 --+ C_0010620957507357588889
+C_0015799222863000931812 --> C_0010620957507357588889 : -p_image_
+C_0005615952877166577034 <|-- C_0015799222863000931812
+
+'Generated with clang-uml, version 0.6.0
+'LLVM version clang version 19.1.7
+@enduml

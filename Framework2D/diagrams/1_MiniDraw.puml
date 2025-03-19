@@ -1,0 +1,174 @@
+@startuml
+class "Window" as C_0005615952877166577034
+class C_0005615952877166577034 {
++Window(const std::string & window_name) : void
++~Window() : void
+..
+#draw() : void
++init() : bool
+#init_glfw() : bool
+#init_gui() : bool
+#render() : void
++run() : void
+__
+#height_ : int
+#name_ : std::string
+#width_ : int
+#window_ : GLFWwindow *
+}
+abstract "Shape" as C_0013949332899565985436
+abstract C_0013949332899565985436 {
++~Shape() constexpr = default : void
+..
++add_control_point(float x, float y) : void
+{abstract} +draw(const Config & config) const = 0 : void
+{abstract} +update(float x, float y) = 0 : void
+__
+}
+class "Shape::Config" as C_0010110700635438516104
+class C_0010110700635438516104 {
+__
++bias : float[2]
++line_color : unsigned char[4]
++line_thickness : float
+}
+abstract "Widget" as C_0000146601290597178883
+abstract C_0000146601290597178883 {
++Widget(const std::string & label) : void
++~Widget() constexpr = default : void
+..
+{abstract} +draw() = 0 : void
+__
+#label_ : std::string
+}
+class "Canvas" as C_0001524359799791403135
+class C_0001524359799791403135 {
++clear_shape_list() : void
++draw() : void
+-draw_background() : void
+-draw_shapes() : void
+-mouse_click_event() : void
+-mouse_move_event() : void
+-mouse_pos_in_canvas() const : ImVec2
+-mouse_release_event() : void
+-mouse_right_click_event() : void
++set_attributes(const ImVec2 & min, const ImVec2 & size) : void
++set_default() : void
++set_ellipse() : void
++set_line() : void
++set_polygon() : void
++set_rect() : void
++show_background(bool flag) : void
+__
+-background_color_ : ImU32
+-border_color_ : ImU32
+-canvas_max_ : ImVec2
+-canvas_min_ : ImVec2
+-canvas_minimal_size_ : ImVec2
+-canvas_size_ : ImVec2
+-current_shape_ : std::shared_ptr<Shape>
+-draw_status_ : bool
+-end_point_ : ImVec2
+-is_active_ : bool
+-is_hovered_ : bool
+-shape_list_ : std::vector<std::shared_ptr<Shape>>
+-shape_type_ : ShapeType
+-show_background_ : bool
+-start_point_ : ImVec2
+}
+enum "Canvas::ShapeType" as C_0001662182189586718078
+enum C_0001662182189586718078 {
+kDefault
+kLine
+kRect
+kEllipse
+kPolygon
+kFreehand
+}
+class "MiniDraw" as C_0017583646214516483458
+class C_0017583646214516483458 {
++MiniDraw(const std::string & window_name) : void
++~MiniDraw() : void
+..
++draw() : void
+-draw_canvas() : void
+__
+-flag_show_canvas_view_ : bool
+-p_canvas_ : std::shared_ptr<Canvas>
+}
+class "Line" as C_0014826438833874875116
+class C_0014826438833874875116 {
++Line() = default : void
++Line(float start_point_x, float start_point_y, float end_point_x, float end_point_y) : void
++~Line() constexpr = default : void
+..
++draw(const Config & config) const : void
++update(float x, float y) : void
+__
+-end_point_x_ : float
+-end_point_y_ : float
+-start_point_x_ : float
+-start_point_y_ : float
+}
+class "Rect" as C_0007557301749679236440
+class C_0007557301749679236440 {
++Rect() = default : void
++Rect(float start_point_x, float start_point_y, float end_point_x, float end_point_y) : void
++~Rect() constexpr = default : void
+..
++draw(const Config & config) const : void
++update(float x, float y) : void
+__
+-end_point_x_ : float
+-end_point_y_ : float
+-start_point_x_ : float
+-start_point_y_ : float
+}
+class "Ellipse" as C_0014015084089363562073
+class C_0014015084089363562073 {
++Ellipse() = default : void
++Ellipse(float start_point_x, float start_point_y, float end_point_x, float end_point_y) : void
++~Ellipse() constexpr = default : void
+..
++draw(const Config & config) const : void
++update(float x, float y) : void
+__
+-end_point_x_ : float
+-end_point_y_ : float
+-start_point_x_ : float
+-start_point_y_ : float
+}
+class "Polygon" as C_0015848645235968799771
+class C_0015848645235968799771 {
++Polygon() = default : void
++Polygon(float start_point_x, float start_point_y) : void
++~Polygon() constexpr = default : void
+..
++add_control_point(float x, float y) : void
++draw(const Config & config) const : void
++end_drawing() : void
++update(float x, float y) : void
+__
+-points_ : std::vector<ImVec2>
+}
+C_0013949332899565985436 ..> C_0010110700635438516104
+C_0010110700635438516104 --+ C_0013949332899565985436
+C_0001524359799791403135 o-- C_0001662182189586718078 : -shape_type_
+C_0001524359799791403135 --> C_0013949332899565985436 : -current_shape_
+C_0001524359799791403135 o-- C_0013949332899565985436 : -shape_list_
+C_0000146601290597178883 <|-- C_0001524359799791403135
+C_0001662182189586718078 --+ C_0001524359799791403135
+C_0017583646214516483458 --> C_0001524359799791403135 : -p_canvas_
+C_0005615952877166577034 <|-- C_0017583646214516483458
+C_0014826438833874875116 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0014826438833874875116
+C_0007557301749679236440 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0007557301749679236440
+C_0014015084089363562073 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0014015084089363562073
+C_0015848645235968799771 ..> C_0010110700635438516104
+C_0013949332899565985436 <|-- C_0015848645235968799771
+
+'Generated with clang-uml, version 0.6.0
+'LLVM version clang version 19.1.7
+@enduml
