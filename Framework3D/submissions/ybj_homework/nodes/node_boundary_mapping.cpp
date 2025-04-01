@@ -229,7 +229,8 @@ NODE_EXECUTION_FUNCTION(square_boundary_mapping)
 
     // preserve the 4 corners of the normlized square
     int   mapped_corners[4]     = {0};
-    float mapped_corners_dis[4] = {std::numeric_limits<float>::infinity()};
+    float mapped_corners_dis[4] = {0.f};
+    std::fill_n(mapped_corners_dis, 4, std::numeric_limits<float>::infinity());
     const OpenMesh::Vec3f mapped_corners_coord[4] = 
     {
         OpenMesh::Vec3f(0.f, 0.f, 0.f),
@@ -270,6 +271,7 @@ NODE_EXECUTION_FUNCTION(square_boundary_mapping)
             float dis_ = (mapped_coord - mapped_corners_coord[j]).norm();
             if (dis_ < mapped_corners_dis[j])
             {
+                std::cout << mapped_coord << std::endl << mapped_corners_coord[j] << std::endl << std::endl;
                 mapped_corners_dis[j] = dis_;
                 mapped_corners[j]     = i;
             }

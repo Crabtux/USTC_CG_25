@@ -48,7 +48,7 @@ $$ \boldsymbol\delta _ i = \boldsymbol{v _ i} - \sum _ {j \in N(i)} w _ j  \bold
 $$ \frac{1}{d _ i} \sum _ {j\in N(i)} (\boldsymbol{v} _ i - \boldsymbol{v} _ j) = \boldsymbol{0}, \quad \text{for all interior } i .$$
 
 
-### 参考的节点连接图（不同人写的输入输出不一定相同，这里仅供参考）
+### 参考的节点连接图（不同人写的输入输出不一定相同，这里仅供参考）（这里有关节点的简单介绍[->](../NodeIntroduction.md/)）
 <div align=center><img width = 80% src ="figs/mesh-9.png"/></div align>
 
 > [!tip]
