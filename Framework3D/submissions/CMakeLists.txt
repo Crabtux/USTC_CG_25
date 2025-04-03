@@ -22,6 +22,10 @@ endforeach ()
 
 
 foreach (dir IN LISTS dirs)
+    if (NOT EXISTS ${dir}/nodes_render)
+        message(STATUS "[NO RENDER NODES IN] " ${dir} )
+        continue()
+    endif()
     message(STATUS "[Add directory RENDER] " ${dir})
     get_property(current_targets DIRECTORY ${dir}/nodes_render PROPERTY BUILDSYSTEM_TARGETS)
     message(STATUS "[Sub targets RENDER] " ${current_targets})
