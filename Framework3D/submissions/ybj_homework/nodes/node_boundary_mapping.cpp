@@ -113,6 +113,7 @@ NODE_EXECUTION_FUNCTION(circle_boundary_mapping)
                     const auto &vj = halfedge_handle.to();
                     if (vj.is_boundary() && vj.idx() != border_idx.back())
                     {
+                        auto xx = halfedge_mesh->point(v);
                         double dis_ = (halfedge_mesh->point(v) - halfedge_mesh->point(vj)).norm();
                         distance.push_back(distance_sum);
                         border_idx.push_back(vj.idx());
@@ -213,9 +214,9 @@ NODE_EXECUTION_FUNCTION(square_boundary_mapping)
                     if (vj.is_boundary() && vj.idx() != border_idx.back())
                     {
                         double dis_ = (halfedge_mesh->point(v) - halfedge_mesh->point(vj)).norm();
+                        distance_sum += dis_;
                         distance.push_back(distance_sum);
                         border_idx.push_back(vj.idx());
-                        distance_sum += dis_;
                         v = vj;
                         break;
                     }
@@ -228,8 +229,8 @@ NODE_EXECUTION_FUNCTION(square_boundary_mapping)
     }
 
     // preserve the 4 corners of the normlized square
-    int   mapped_corners[4]     = {0};
-    float mapped_corners_dis[4] = {0.f};
+    int   mapped_corners[4]     = {-999, -999, -999, -999};
+    float mapped_corners_dis[4] = {999.f, 999.f, 999.f, 999.f};
     std::fill_n(mapped_corners_dis, 4, std::numeric_limits<float>::infinity());
     const OpenMesh::Vec3f mapped_corners_coord[4] = 
     {
@@ -271,7 +272,6 @@ NODE_EXECUTION_FUNCTION(square_boundary_mapping)
             float dis_ = (mapped_coord - mapped_corners_coord[j]).norm();
             if (dis_ < mapped_corners_dis[j])
             {
-                std::cout << mapped_coord << std::endl << mapped_corners_coord[j] << std::endl << std::endl;
                 mapped_corners_dis[j] = dis_;
                 mapped_corners[j]     = i;
             }
