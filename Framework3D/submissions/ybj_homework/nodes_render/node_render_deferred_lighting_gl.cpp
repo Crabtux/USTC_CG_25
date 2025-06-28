@@ -3,6 +3,7 @@
 #include "../camera.h"
 #include "../light.h"
 #include "nodes/core/def/node_def.hpp"
+#include "pxr/base/gf/frustum.h"
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/imaging/glf/simpleLight.h"
 #include "pxr/imaging/hd/tokens.h"
@@ -122,12 +123,27 @@ NODE_EXECUTION_FUNCTION(deferred_lighting)
             auto position4 = light_params.GetPosition();
             pxr::GfVec3f position3(position4[0], position4[1], position4[2]);
 
+            // FIXME: 为啥这步非得我自己做（
+            GfFrustum frustum;
+            GfMatrix4f light_view_mat;
+            GfMatrix4f light_projection_mat;
+
+            GfVec3f light_position = { light_params.GetPosition()[0],
+                                       light_params.GetPosition()[1],
+                                       light_params.GetPosition()[2] };
+
+            light_view_mat = GfMatrix4f().SetLookAt(
+                light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
+            frustum.SetPerspective(120.f, 1.0, 1, 25.f);
+            light_projection_mat =
+                GfMatrix4f(frustum.ComputeProjectionMatrix());
+
             if (lights[i]->Get(HdLightTokens->radius).IsHolding<float>()) {
                 auto radius =
                     lights[i]->Get(HdLightTokens->radius).Get<float>();
 
                 light_vector.emplace_back(
-                    GfMatrix4f(), GfMatrix4f(), position3, 0.f, diffuse3, i);
+                    light_projection_mat, light_view_mat, position3, radius, diffuse3, i);
             }
 
             // You can add directional light here, and also the corresponding
@@ -159,6 +175,8 @@ NODE_EXECUTION_FUNCTION(deferred_lighting)
     if (!shader_error.empty()) {
         throw std::runtime_error(shader_error);
     }
+
+    return true;
 }
 
 NODE_DECLARATION_UI(deferred_lighting);

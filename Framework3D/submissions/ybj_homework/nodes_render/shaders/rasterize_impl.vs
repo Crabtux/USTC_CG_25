@@ -15,10 +15,10 @@ uniform mat4 view;
 uniform mat4 projection;
 
 void main() {
-gl_Position = projection * view * model * vec4(aPos, 1.0);
-vec4 vPosition = model * vec4(aPos, 1.0);
-vertexPosition = vPosition.xyz / vPosition.w;
-vertexNormal = (inverse(transpose(mat3(model))) * aNormal);
-vTexcoord = aTexcoord.data[gl_VertexID];
-vTexcoord.y = 1.0 - vTexcoord.y;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    vec4 vPosition = model * vec4(aPos, 1.0);
+    vertexPosition = vPosition.xyz / vPosition.w;
+    vertexNormal = (inverse(transpose(mat3(model))) * aNormal);
+    vTexcoord = aTexcoord.data[gl_VertexID];
+    vTexcoord.y = 1.0 - vTexcoord.y;
 }

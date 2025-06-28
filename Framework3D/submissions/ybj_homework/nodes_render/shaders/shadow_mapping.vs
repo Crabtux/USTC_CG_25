@@ -7,7 +7,10 @@ uniform mat4 model;
 out vec3 vertexPosition;
 
 void main() {
+    // 让 fs 正常工作
     gl_Position = light_projection * light_view * model * vec4(aPos, 1.0);
+
+    // 传数据
     vec4 vPosition = model * vec4(aPos, 1.0);
     vertexPosition = vPosition.xyz / vPosition.w;
 }

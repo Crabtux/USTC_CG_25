@@ -13,6 +13,11 @@ pkgs.mkShell {
   packages = with pkgs; [
     clang-uml
     plantuml
+
+    # 这就是我们双显卡玩家的福报啊！
+    vkdevicechooser
+
+    mesa-demos
   ];
 
   nativeBuildInputs = with pkgs; [
@@ -28,6 +33,7 @@ pkgs.mkShell {
       pyopengl
       pyside6
       numpy
+      jinja2
     ]))
   ];
 
@@ -47,9 +53,21 @@ pkgs.mkShell {
     tbb
     shader-slang
 
+    # For Vulkan shaderc
+    shaderc.static
+    spirv-tools
+
+    # 都没啥用，SPIRV-Reflect 和 VMA 都是手加的
+    shaderc
+    # spirv-headers
+    # glslang
+
     vulkan-headers
     vulkan-loader
     vulkan-tools
+    vulkan-validation-layers
+    vulkan-memory-allocator
+    vulkan-utility-libraries
   ];
 
   # OpenGL runtime dependency is not written in the compiled executable
@@ -77,11 +95,19 @@ pkgs.mkShell {
 
   dlib_DIR = "/home/crabtux/code/cpp/USTC_CG_25/Framework2D/src/assignments/2_ImageWarping/_deps/dlib/lib64/cmake/dlib";
 
-  PXR_PLUGINPATH_NAME = "/home/crabtux/code/cpp/USTC_CG_25/Framework3D/Framework3D/SDK/OpenUSD/Debug/lib/usd";
+  PXR_PLUGINPATH_NAME = "/home/crabtux/code/cpp/USTC_CG_25/Framework3D/Framework3D/Binaries/Debug/usd/hd_USTC_CG/resources:/home/crabtux/code/cpp/USTC_CG_25/Framework3D/Framework3D/Binaries/Debug/usd/hd_USTC_CG_GL/resources:/home/crabtux/code/cpp/USTC_CG_25/Framework3D/Framework3D/Binaries/Debug/usd/hd_USTC_CG_Embree/resources";
 
-  # shellHook = ''
-  #   echo ${pkgs.shader-slang.dev}
-  #   export CMAKE_INCLUDE_PATH=$CMAKE_INCLUDE_PATH:${pkgs.python3}/include/python3.12
-  # '';
+  VULKAN_SDK = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+  # VULKAN_SDK = "${pkgs.vulkan-headers}";
+
+  shaderc_combined_PATH = "${pkgs.shaderc.static}";
+
+  # 这救世我们双显卡玩家的福报啊！（二度）
+  ENABLE_DEVICE_CHOOSER_LAYER = 1;
+  VULKAN_DEVICE_INDEX = 0;
+
+  shellHook = ''
+    echo ${pkgs.shader-slang}
+  '';
 }
 

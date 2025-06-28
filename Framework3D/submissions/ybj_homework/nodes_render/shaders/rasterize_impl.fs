@@ -26,13 +26,14 @@ void main() {
     depth = clipPos.z / clipPos.w;
     texcoords = vTexcoord;
 
-    diffuseColor = texture2D(diffuseColorSampler, vTexcoord).xyz;
-    metallicRoughness = texture2D(metallicRoughnessSampler, vTexcoord).zy;
+    diffuseColor = texture(diffuseColorSampler, vTexcoord).xyz;
+    metallicRoughness = texture(metallicRoughnessSampler, vTexcoord).zy;
 
-    vec3 normalmap_value = texture2D(normalMapSampler, vTexcoord).xyz;
-    normal = normalize(vertexNormal);
+    vec3 normalmap_value = texture(normalMapSampler, vTexcoord).xyz;
+    // normal = normalize(vertexNormal);
 
     // HW6_TODO: Apply normal map here. Use normal textures to modify vertex normals.
+    normal = normalize(normalmap_value * 2.0 - 1.0);
 
     // Calculate tangent and bitangent
     vec3 edge1 = dFdx(vertexPosition);

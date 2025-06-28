@@ -121,6 +121,8 @@ NODE_EXECUTION_FUNCTION(environment_pass)
     if (!shader_error.empty()) {
         throw std::runtime_error(shader_error);
     }
+
+    return true;
 }
 
 NODE_DECLARATION_UI(environment_pass);

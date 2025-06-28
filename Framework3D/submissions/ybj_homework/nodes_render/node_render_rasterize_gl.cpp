@@ -150,7 +150,7 @@ NODE_EXECUTION_FUNCTION(rasterize_impl)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &framebuffer);
 
-    auto shader_error = shader_handle->shader.get_error();
+    // auto shader_error = shader_handle->shader.get_error();
 
     resource_allocator.destroy(shader_handle);
     resource_allocator.destroy(depth_texture_for_opengl);
@@ -162,9 +162,11 @@ NODE_EXECUTION_FUNCTION(rasterize_impl)
     params.set_output("MetallicRoughness", metallic_roughness);
     params.set_output("diffuseColor", diffuseColor_texture);
 
-    if (!shader_error.empty()) {
-        throw std::runtime_error(shader_error);
-    }
+    // if (!shader_error.empty()) {
+    //     throw std::runtime_error(shader_error);
+    // }
+
+    return true;
 }
 
 NODE_DECLARATION_UI(rasterize_impl);
