@@ -48,3 +48,8 @@
 3. PoissonImageEditing 图像融合 [->](./3_poisson_image_editing/)
 4. TutteParameterzation 曲面参数化 [->](./4_tutte_parametrzation/)
 5. ArapParametrzation & LaplacianSurfaceEditing ARAP参数化 & Laplace表面编辑 [->](./5_arap_parametrzation&_laplace_surface_editing/)
+6. Rasterization 光栅化 [->](./6_rasterization/)
+7. PathTracing 路径追踪 [->](./7_path_tracing/)
+8. MassSpring 质点弹簧系统 [->](./8_mass_spring/)
+9. SPHFluid 流体仿真 [->](./9_sph_fluid/)
+10. CharacterAnimation 角色动画 [->](./10_character_animation/)
