@@ -48,6 +48,7 @@ pkgs.mkShell {
     xorg.libXext
     xorg.libXxf86vm
     xorg.libXt
+    libunwind
 
     zlib
     tbb
