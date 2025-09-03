@@ -10,6 +10,8 @@ MassSpring::MassSpring(const Eigen::MatrixXd& X, const EdgeSet& E)
 
     std::cout << "number of edges: " << E.size() << std::endl;
     std::cout << "init mass spring" << std::endl;
+    std::cout << "X.rows():" << X.rows() << std::endl;
+    std::cout << "X.cols():" << X.cols() << std::endl;
 
     // Compute the rest pose edge length
     for (const auto& e : E) {
@@ -48,16 +50,48 @@ void MassSpring::step()
         TIC(step)
 
         // (HW TODO) 
-        // auto H_elastic = computeHessianSparse(stiffness);  // size = [nx3, nx3]
+        auto H_elastic = computeHessianSparse(stiffness);  // size = [nx3, nx3]
 
         // compute Y 
+        auto M     = mass_per_vertex * Eigen::MatrixXd::Identity(n_vertices, n_vertices);
 
-        // Solve Newton's search direction with linear solver 
+        MatrixXd G_ext(n_vertices, 3);
+        G_ext.rowwise() = gravity.transpose();
+
+        auto X_minus_Y = -(h * vel + h * h * G_ext);
+
+        // 梯度计算
+        // 如果我不在这里把它的计算一步一步地拆开，它不知道为什么会爆炸！可恶的数值稳定性！
+        double inverse_h = (double)1.0 / h;
+        auto part_1 = M * X_minus_Y * std::pow(inverse_h, 2.f);
+        auto grad_E = computeGrad(stiffness);
+        auto sum    = part_1 - grad_E;
+        auto grad_g = flatten(sum);
+
+        // 固定点处理
+        for (int i = 0; i < n_vertices; i++) {
+            if (dirichlet_bc_mask[i]) {
+                H_elastic.block(3 * i, 0, 3, 3 * n_vertices) *= 0;
+                H_elastic.block(0, 3 * i, 3 * n_vertices, 3) *= 0;
+                for (int x = 3 * i; x < 3 * (i + 1); x++) {
+                    H_elastic.coeffRef(x, x) = (double) 1.0;
+                    grad_g(x, 0)             = (double) 0.0;
+                }
+            }
+        }
         
+        // ve Newton's search direction with linear solver 
+        Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+        solver.compute(H_elastic);
+
+        auto dx = unflatten(solver.solve(-grad_g));
+
         // update X and vel 
         // **Delete the following two lines**
-        vel = 0.03f * Eigen::MatrixXd::Ones(X.rows(), X.cols());
-        X += vel * h;
+        // vel = 0.03f * Eigen::MatrixXd::Ones(X.rows(), X.cols());
+        // X += vel * h;
+        vel = dx / h;
+        X += dx;
 
         TOC(step)
     }
@@ -75,9 +109,25 @@ void MassSpring::step()
         // -----------------------------------------------
 
         // (HW TODO): Implement semi-implicit Euler time integration
+        auto F_int = computeGrad(stiffness);
 
         // Update X and vel 
-        
+        for (int i = 0; i < X.rows(); i++) {
+            Eigen::Matrix3d M = mass_per_vertex * Eigen::Matrix3d::Identity();
+            Eigen::Vector3d f_int = F_int.row(i).transpose();
+            Eigen::Vector3d f_ext = mass_per_vertex * gravity;
+
+            if (dirichlet_bc_mask[i]) {
+                vel.row(i) *= 0.f;
+            }
+            else {
+                vel.row(i) += h * M.inverse() * (f_int + f_ext);
+            }
+
+            X.row(i) += vel.row(i) * h;
+        }
+
+        vel *= damping;
     }
     else {
         std::cerr << "Unknown time integrator!" << std::endl;
@@ -107,13 +157,21 @@ Eigen::MatrixXd MassSpring::computeGrad(double stiffness)
 {
     Eigen::MatrixXd g = Eigen::MatrixXd::Zero(X.rows(), X.cols());
     unsigned i = 0;
+
     for (const auto& e : E) {
         // --------------------------------------------------
         // (HW TODO): Implement the gradient computation
-        
+        auto diff = X.row(e.first) - X.row(e.second);
+        auto l = E_rest_length[i];
+        auto f = stiffness * (diff.norm() - l) * (diff / diff.norm());
+
+        g.row(e.first) += -f;
+        g.row(e.second) += f;
+
         // --------------------------------------------------
         i++;
     }
+
     return g;
 }
 
@@ -125,6 +183,9 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     unsigned i = 0;
     auto k = stiffness;
     const auto I = Eigen::MatrixXd::Identity(3, 3);
+
+    // Hessian += H
+    std::vector<Triplet<double>> triplet;
     for (const auto& e : E) {
         // --------------------------------------------------
         // (HW TODO): Implement the sparse version Hessian computation
@@ -132,10 +193,45 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
         // You can also consider positive definiteness here
        
         // --------------------------------------------------
+        Eigen::Matrix3d H_i = Eigen::Matrix3d::Zero();
+
+        auto diff = X.row(e.first) - X.row(e.second);
+
+        // 正定性处理
+        auto X_i  = (diff.transpose() * diff) / std::pow(diff.norm(), 2.f);
+        H_i += k * X_i;
+        if (E_rest_length[i] <= diff.norm()) {
+            H_i += k * (1 - E_rest_length[i] / diff.norm()) * (I - X_i);
+        }
+
+        // Shadowed i and j
+        {
+            int i = e.first, j = e.second;
+            auto add_submatrix3d =
+                [&](int startRow, int startCol, const Eigen::Matrix3d& submatrix){
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            triplet.push_back({startRow + i, startCol + j, submatrix(i, j)});
+                        }
+                    }
+                };
+
+            add_submatrix3d(i * 3, i * 3, H_i);
+            add_submatrix3d(j * 3, j * 3, H_i);
+            add_submatrix3d(i * 3, j * 3, -H_i);
+            add_submatrix3d(j * 3, i * 3, -H_i);
+        }
 
         i++;
     }
-    
+
+    // Hessian += M / h * h;
+    double mass_per_vertex = mass / n_vertices; 
+    double inverse_h = (double)1.0 / h;
+    for (int i = 0; i < 3 * n_vertices; i++)
+        triplet.push_back({i, i, mass_per_vertex * std::pow(inverse_h, 2.f)});
+
+    H.setFromTriplets(triplet.begin(), triplet.end());
     H.makeCompressed();
     return H;
 }

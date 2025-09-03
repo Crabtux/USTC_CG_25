@@ -25,7 +25,7 @@ NODE_DECLARATION_FUNCTION(mass_spring) {
   b.add_input<Geometry>("Mesh");
 
   // Simulation parameters
-  b.add_input<float>("stiffness").default_val(1000).min(100).max(10000);
+  b.add_input<float>("stiffness").default_val(1000).min(10).max(10000);
   b.add_input<float>("h").default_val(0.0333333333f).min(0.0).max(0.5);
   b.add_input<float>("damping").default_val(0.995).min(0.0).max(1.0);
   b.add_input<float>("gravity").default_val(-9.8).min(-20.).max(20.);
