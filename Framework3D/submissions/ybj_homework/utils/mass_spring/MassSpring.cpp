@@ -57,8 +57,9 @@ void MassSpring::step()
 
         MatrixXd G_ext(n_vertices, 3);
         G_ext.rowwise() = gravity.transpose();
+        MatrixXd F_ext = G_ext + acceleration_collision;
 
-        auto X_minus_Y = -(h * vel + h * h * G_ext);
+        auto X_minus_Y = -(h * vel + h * h * F_ext);
 
         // 梯度计算
         // 如果我不在这里把它的计算一步一步地拆开，它不知道为什么会爆炸！可恶的数值稳定性！
@@ -258,8 +259,16 @@ void MassSpring::reset()
 Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, double radius)
 {
     Eigen::MatrixXd force = Eigen::MatrixXd::Zero(X.rows(), X.cols());
+
+    double k = collision_penalty_k,
+           s = collision_scale_factor,
+           r = radius;
+
     for (int i = 0; i < X.rows(); i++) {
-       // (HW Optional) Implement penalty-based force here 
+        // (HW Optional) Implement penalty-based force here 
+        auto diff = X.row(i) - center.transpose();
+        force.row(i) = k * std::max((double) (s * r - diff.norm()), (double) 0.0)
+                     * diff.normalized();
     }
     return force;
 }
