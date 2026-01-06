@@ -99,17 +99,17 @@ void SPHBase::compute_non_pressure_acceleration()
 {
     // (HW TODO) Traverse all particles to compute each particle's non-pressure acceleration 
     for (auto& p : ps_.particles()) {
-
         // necessary code here to compute particle p's acceleration include gravity and viscosity
         // We do not consider surface tension in this assignment, but you can add it if you like
+        Vector3d a_i_viscosity = Vector3d::Zero();
 
-        //for (auto& q : p->neighbors()) {
-        // 
-        // Prompt: use the "compute_viscosity_acceleration" function to compute the viscosity acceleration between p and q"
-        // 
-        //}
+        for (auto& q : p->neighbors()) {
+            // Prompt: use the "compute_viscosity_acceleration" function to compute the viscosity acceleration between p and q"
+            a_i_viscosity += compute_viscosity_acceleration(p, q);
+        }
 
-
+        Vector3d a_i_non_pressure = a_i_viscosity + this->gravity();
+        p->vel_ += this->dt() * a_i_non_pressure;
     }
 }
 
@@ -122,18 +122,24 @@ Vector3d SPHBase::compute_viscosity_acceleration(
     auto x_ij = p->x() - q->x();
     Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
 
-    // Vector3d laplace_v = ... 
+    const uint32_t dim = 3;
+    const uint32_t k = 2 * (dim + 2);
+    Vector3d laplace_v = k * (ps_.mass() / q->density()) * (v_ij.dot(x_ij) / (x_ij.dot(x_ij) + 0.01 * pow(ps_.h(), 2.0))) * grad;
 
-    //return this->viscosity_ * laplace_v;
-
-    return Vector3d::Zero();
+    return (this->viscosity_ * laplace_v);
 }
 
 // Traverse all particles and compute pressure gradient acceleration
 void SPHBase::compute_pressure_gradient_acceleration()
 {
     for (auto& p : ps_.particles()) {
+        p->acceleration_ = Vector3d::Zero();
+
         // (HW TODO) Traverse all particles and compute each particle's acceleration from pressure gradient force
+        for (auto &q : p->neighbors()) {
+            Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
+            p->acceleration_ -= ps_.mass() * ((p->pressure() / pow(p->density(), 2.0)) + (q->pressure() / pow(q->density(), 2.0))) * grad;
+        }
     }
 }
 
@@ -155,6 +161,12 @@ void SPHBase::advect()
         // Your code here 
 
         // ---------------------------------------------------------
+
+        p->vel_ = p->vel() + this->dt() * p->acceleration();
+        p->X_ = p->x() + this->dt() * p->vel();
+
+        check_collision(p);
+
         vel_.row(p->idx()) = p->vel().transpose();
         X_.row(p->idx()) = p->x().transpose();
     }
